@@ -1,6 +1,8 @@
 const User = require("../models/useModel");
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
+
+//POST
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
   const findUser = await User.findOne({ email: email });
@@ -31,6 +33,32 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
   }
 });
 
+//UPDATE
+
+const updatedUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        firstname: req?.body?.firstname,
+        lastname: req?.body?.lastname,
+        email: req?.body?.email,
+        mobile: req?.body?.mobile,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(updatedUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//GET
+
 const getallUser = asyncHandler(async (req, res) => {
   try {
     const getUsers = await User.find();
@@ -53,17 +81,25 @@ const getaUser = asyncHandler(async (req, res) => {
   }
 });
 
+//DELETE
 const deleteaUser = asyncHandler(async (req, res) => {
   console.log(req.params);
   const { id } = req.params;
   try {
-    const deleteaUser = await User.findById(id);
+    const deleteaUser = await User.findByIdAndDelete(id);
     res.json({
-      getaUser,
+      deleteaUser,
     });
   } catch (error) {
     throw new Error(error);
   }
 });
 
-module.exports = { createUser, loginUserCtrl, getallUser, getaUser };
+module.exports = {
+  createUser,
+  loginUserCtrl,
+  getallUser,
+  getaUser,
+  deleteaUser,
+  updatedUser
+};
