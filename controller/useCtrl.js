@@ -47,11 +47,16 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
   }
 });
 
-// HANDLE REFRESH TOKEN 
-const handleRefreshToken = asyncHandler(async(req, res) => {
-  const cookie = req.cookies
-  console.log(cookie)
-})
+// HANDLE REFRESH TOKEN
+const handleRefreshToken = asyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+  console.log(cookie);
+  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+  const refreshToken = cookie.refreshToken;
+  console.log(refreshToken);
+  const user = await User.findOne({ refreshToken });
+  res.json(user);
+});
 
 //UPDATE
 
@@ -167,5 +172,5 @@ module.exports = {
   updatedUser,
   blockUser,
   unblockUser,
-  handleRefreshToken
+  handleRefreshToken,
 };
