@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongodbId = require("../utils/validateMongodbId");
 const { generateRefreshToken } = require("../config/refreshtoken");
+const jwt = require("jsonwebtoken");
 
 //POST
 const createUser = asyncHandler(async (req, res) => {
@@ -22,7 +23,7 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
 
   const findUser = await User.findOne({ email });
   if (findUser && (await findUser.isPasswordMatched(password))) {
-    const refreshToken = await generateRefreshToken(findUser?._id);
+    const refreshToken = generateRefreshToken(findUser?._id);
     const updateuser = await User.findByIdAndUpdate(
       findUser.id,
       {
@@ -50,12 +51,44 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
 // HANDLE REFRESH TOKEN
 const handleRefreshToken = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
-  console.log(cookie);
   if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
   const refreshToken = cookie.refreshToken;
-  console.log(refreshToken);
   const user = await User.findOne({ refreshToken });
-  res.json(user);
+  if (!user)
+    throw new Error(
+      "Sem atualização de token em Banco de dados ou não combinado!"
+    );
+  jwt.verify(refreshToken.process.env.JWT_SECERET, (err, decoded) => {
+    if (err || user.id !== decoded.id) {
+      throw new Error("Há algo de errado com o Refresh Token");
+    }
+    const accessToken = generateToken(user?._id);
+    res.json({ accessToken });
+  });
+});
+
+//LOGOUT
+
+const logout = asyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+  const refreshToken = cookie.refreshToken;
+  const user = await User.findOne({ refreshToken });
+  if (!user) {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+    });
+    return res.sendStatus(204)
+  }
+  await User.findOneAndUpdate(refreshToken, {
+    refreshToken: "",
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+  });
+   res.sendStatus(204)
 });
 
 //UPDATE
@@ -173,4 +206,5 @@ module.exports = {
   blockUser,
   unblockUser,
   handleRefreshToken,
+  logout,
 };
