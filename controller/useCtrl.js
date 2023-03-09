@@ -79,7 +79,7 @@ const logout = asyncHandler(async (req, res) => {
       httpOnly: true,
       secure: true,
     });
-    return res.sendStatus(204)
+    return res.sendStatus(204);
   }
   await User.findOneAndUpdate(refreshToken, {
     refreshToken: "",
@@ -88,7 +88,7 @@ const logout = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
   });
-   res.sendStatus(204)
+  res.sendStatus(204);
 });
 
 //UPDATE
@@ -196,6 +196,20 @@ const unblockUser = asyncHandler(async (req, res) => {
   }
 });
 
+const updatePassword = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const password = req.body;
+  validateMongodbId(_id);
+  const user = await User.findById(_id);
+  if (password) {
+    user.password = password;
+    const updatedPassword = await user.save()
+    res.json(updatedPassword)
+  }else {
+    res.json(user)
+  }
+});
+
 module.exports = {
   createUser,
   loginUserCtrl,
@@ -207,4 +221,5 @@ module.exports = {
   unblockUser,
   handleRefreshToken,
   logout,
+  updatePassword,
 };
