@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongodbId = require("../utils/validateMongodbId");
 const { generateRefreshToken } = require("../config/refreshtoken");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
 //POST
@@ -210,7 +211,43 @@ const updatePassword = asyncHandler(async (req, res) => {
   }
 });
 
+const forgotPasswordToken = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) throw Error("Usuário não encontrado com este email!");
+  try {
+    const token = await user.createPasswordResetToken();
+    await user.save();
+    const resetURL = `Olá! Por favor siga este link para Resetar sua senha! Sera validada em até 10 minutos <a href='http://localhost:5000/api/user/reset-password/${token}' >Clique</a> `;
+    const data = {
+      to: email,
+      text: "Olá Usuário!",
+      subject: "Link de senha ESQUECIDA!",
+      htm: resetURL,
+    };
+    sendEmail(data);
+    res.json(token);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
 
+/*const resetPassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+  const { token } = req.params;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.Now() },
+  });
+  if (!user)
+    throw new Error("Token Expirado. Por favor tente novamente mais tarde!");
+    user.password = password
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save()
+    res.json(user)
+});*/
 
 module.exports = {
   createUser,
@@ -224,4 +261,6 @@ module.exports = {
   handleRefreshToken,
   logout,
   updatePassword,
+  forgotPasswordToken,
+  
 };
