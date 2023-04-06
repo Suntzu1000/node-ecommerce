@@ -2,24 +2,27 @@ const User = require("../models/useModel");
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 
+const JWT_SECRET = process.env.JWT_SECRET || "default_secret_value";
+
 const authMiddlewares = asyncHandler(async (req, res, next) => {
   let token;
   if (req?.headers?.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
     try {
       if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
         const user = await User.findById(decoded?.id);
         req.user = user;
         next();
       }
     } catch (error) {
-      throw new Error("Não Autorizado, token expirado! Tente novamente");
+      throw new Error("Não autorizado token expirado, Por favor tente novamente");
     }
   } else {
-    throw new Error("There is no token attached to header");
+    throw new Error(" Não há token em cabeçalho(header)");
   }
 });
+
 const isAdmin = asyncHandler(async (req, res, next) => {
   const {email} = req.user
   const adminUser = await User.findOne({email})

@@ -1,6 +1,7 @@
 const Product = require("../models/productModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
+const validateMongoDbId = require("../utils/validateMongodbId")
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -55,8 +56,6 @@ const getAllProduct = asyncHandler(async (req, res) => {
     const queryObj = { ...req.query };
     const excludeFields = ["página", "sort", "limit", "fields"];
     excludeFields.forEach((el) => delete queryObj[el]);
-    console.log(queryObj);
-
     let queryStr = JSON.stringify(queryObj);
 
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
