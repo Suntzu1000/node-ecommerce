@@ -1,4 +1,5 @@
 const Product = require("../models/productModel");
+const User = require("../models/useModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongoDbId = require("../utils/validateMongodbId");
@@ -102,12 +103,12 @@ const addWishList = asyncHandler(async (req, res) => {
   const { prodId } = req.body;
   try {
     const user = await User.findById(_id);
-    const added = user.whishlist.find((id) => id.toString() === prodId);
+    const added = user.wishlist.find((id) => id.toString() === prodId);
     if (added) {
       let user = await User.findByIdAndUpdate(
         _id,
         {
-          $pull: { whishlist: prodId },
+          $pull: { wishlist: prodId },
         },
         { new: true }
       );
@@ -116,7 +117,7 @@ const addWishList = asyncHandler(async (req, res) => {
       let user = await User.findByIdAndUpdate(
         _id,
         {
-          $push: { whishlist: prodId },
+          $push: { wishlist: prodId },
         },
         { new: true }
       );
@@ -126,6 +127,14 @@ const addWishList = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
+const rating = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { star, prodId } = req.body;
+  const product = await Product.findById(prodId);
+  let alreadyRated = product.ratings.find((userId) => userId)
+});
+
 module.exports = {
   createProduct,
   getaProduct,
@@ -133,4 +142,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   addWishList,
+  rating,
 };
