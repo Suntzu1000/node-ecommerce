@@ -1,7 +1,7 @@
 const Product = require("../models/productModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
-const validateMongoDbId = require("../utils/validateMongodbId")
+const validateMongoDbId = require("../utils/validateMongodbId");
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -84,14 +84,44 @@ const getAllProduct = asyncHandler(async (req, res) => {
     const limit = req.query.limit;
     const skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
-    if(req.query.page) {
-      const productCount = await Product.countDocuments()
-      if(skip >= productCount) throw new Error('ESTA PÁGINA NÃO EXISTE!')
+    if (req.query.page) {
+      const productCount = await Product.countDocuments();
+      if (skip >= productCount) throw new Error("ESTA PÁGINA NÃO EXISTE!");
     }
     console.log(page, limit, skip);
 
     const product = await query;
     res.json(product);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const addWishList = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { prodId } = req.body;
+  try {
+    const user = await User.findById(_id);
+    const added = user.whishlist.find((id) => id.toString() === prodId);
+    if (added) {
+      let user = await User.findByIdAndUpdate(
+        _id,
+        {
+          $pull: { whishlist: prodId },
+        },
+        { new: true }
+      );
+      res.json(user);
+    } else {
+      let user = await User.findByIdAndUpdate(
+        _id,
+        {
+          $push: { whishlist: prodId },
+        },
+        { new: true }
+      );
+      res.json(user);
+    }
   } catch (error) {
     throw new Error(error);
   }
@@ -102,4 +132,5 @@ module.exports = {
   getAllProduct,
   updateProduct,
   deleteProduct,
+  addWishList,
 };
