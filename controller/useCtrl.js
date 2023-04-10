@@ -1,4 +1,6 @@
 const User = require("../models/useModel");
+const Product = require("../models/productModel");
+const Cart = require("../models/cartModel");
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongodbId = require("../utils/validateMongodbId");
@@ -20,40 +22,76 @@ const createUser = asyncHandler(async (req, res) => {
 
 const loginUserCtrl = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  
-    try {
-      const findUser = await User.findOne({ email });
-    
-      if (findUser && (await findUser.isPasswordMatched(password))) {
-        const refreshToken = generateRefreshToken(findUser._id);
-        const updateuser = await User.findByIdAndUpdate(
-          findUser.id,
-          {
-            refreshToken,
-          },
-          { new: true }
-        );
-        res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          maxAge: 72 * 60 * 60 * 1000,
-        });
-        res.json({
-          _id: findUser._id,
-          firstname: findUser.firstname,
-          lastname: findUser.lastname,
-          email: findUser.email,
-          mobile: findUser.mobile,
-          token: generateToken(findUser._id),
-        });
-      } else {
-        throw new Error("Credenciais Inválidos");
-      }
-    } catch (error) {
-      console.error("Erro ao procurar usuário:", error);
-      throw new Error("Erro interno do servidor");
-    }    
+
+  try {
+    const findUser = await User.findOne({ email });
+
+    if (findUser && (await findUser.isPasswordMatched(password))) {
+      const refreshToken = generateRefreshToken(findUser._id);
+      const updateuser = await User.findByIdAndUpdate(
+        findUser.id,
+        {
+          refreshToken,
+        },
+        { new: true }
+      );
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        maxAge: 72 * 60 * 60 * 1000,
+      });
+      res.json({
+        _id: findUser._id,
+        firstname: findUser.firstname,
+        lastname: findUser.lastname,
+        email: findUser.email,
+        mobile: findUser.mobile,
+        token: generateToken(findUser._id),
+      });
+    } else {
+      throw new Error("Credenciais Inválidos");
+    }
+  } catch (error) {
+    console.error("Erro ao procurar usuário:", error);
+    throw new Error("Erro interno do servidor");
   }
-);
+});
+
+const loginAdmin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const findAdmin = await User.findOne({ email });
+    if (findAdmin.role !== "admin") throw new Error("Não autorizado!");
+
+    if (findAdmin && (await findAdmin.isPasswordMatched(password))) {
+      const refreshToken = generateRefreshToken(findAdmin._id);
+      const updateuser = await User.findByIdAndUpdate(
+        findAdmin.id,
+        {
+          refreshToken,
+        },
+        { new: true }
+      );
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        maxAge: 72 * 60 * 60 * 1000,
+      });
+      res.json({
+        _id: findAdmin._id,
+        firstname: findAdmin.firstname,
+        lastname: findAdmin.lastname,
+        email: findAdmin.email,
+        mobile: findAdmin.mobile,
+        token: generateToken(findAdmin._id),
+      });
+    } else {
+      throw new Error("Credenciais Inválidos");
+    }
+  } catch (error) {
+    console.error("Erro ao procurar usuário:", error);
+    throw new Error("Erro interno do servidor");
+  }
+});
 
 // HANDLE REFRESH TOKEN
 const handleRefreshToken = asyncHandler(async (req, res) => {
@@ -125,6 +163,25 @@ const updatedUser = asyncHandler(async (req, res) => {
 });
 
 //GET
+const saveAddress = asyncHandler(async (req, res, next) => {
+  const { _id } = req.user;
+  validateMongodbId(_id);
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      _id,
+      {
+        address: req?.body?.address,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(updatedUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
 
 const getallUser = asyncHandler(async (req, res) => {
   try {
@@ -248,11 +305,33 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
   if (!user)
     throw new Error("Token Expirado. Por favor tente novamente mais tarde!");
-    user.password = password
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save()
-    res.json(user)
+  user.password = password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  res.json(user);
+});
+
+const getWishList = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  try {
+    const findUser = await User.findById(_id).populate("wishlist");
+    res.json(findUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const userCart = asyncHandler(async (req, res, next) => {
+  const { cart } = req.body;
+  const { _id } = req.user;
+  validateMongodbId(_id);
+  try {
+    const user = await User.findById(_id);
+    const alreadyExistCart = await Cart.findOne({ orderby: user._id });
+  } catch (error) {
+    throw new Error(error);
+  }
 });
 
 module.exports = {
@@ -269,5 +348,8 @@ module.exports = {
   updatePassword,
   forgotPasswordToken,
   resetPassword,
-  
+  loginAdmin,
+  getWishList,
+  saveAddress,
+  userCart,
 };
