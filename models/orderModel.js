@@ -19,7 +19,7 @@ var orderSchema = new mongoose.Schema(
       default: "Não Processado!",
       enum: [
         "Não Processado",
-        "Dinheiro na Entrega",
+        "Dinheiro em Entrega",
         "Processando...",
         "Despachado",
         "Cancelado",
