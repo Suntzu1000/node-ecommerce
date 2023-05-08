@@ -34,7 +34,7 @@ router.put("/order/update-order/:id", authMiddlewares, isAdmin, updateOrderStatu
 
 router.put("/password", authMiddlewares, updatePassword);
 router.post("/login", loginUserCtrl);
-router.post("/admin_login", loginAdmin);
+router.post("/admin-login", loginAdmin);
 router.post("/cart", authMiddlewares, userCart);
 router.post("/cart/applycoupon", authMiddlewares, applyCoupon);
 router.post("/cart/cash-order", authMiddlewares, createOrder);
