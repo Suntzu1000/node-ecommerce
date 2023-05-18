@@ -29,7 +29,7 @@ var productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    quantity:{
+    quantity: {
       type: Number,
       required: true,
     },
@@ -37,9 +37,14 @@ var productSchema = new mongoose.Schema(
       types: Number,
       default: 0,
     },
-    images: [],
+    images: [
+      {
+        public_id: String,
+        url: String,
+      },
+    ],
     color: [],
-    tags: [],
+    tags: String,
     ratings: [
       {
         star: Number,
@@ -50,7 +55,7 @@ var productSchema = new mongoose.Schema(
     totalrating: {
       type: String,
       default: 0,
-    }
+    },
   },
   { timestamps: true }
 );
