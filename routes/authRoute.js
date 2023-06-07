@@ -24,11 +24,12 @@ const {
   getOrders,
   updateOrderStatus,
   getAllOrders,
+  getOrderByUserId,
 } = require("../controller/useCtrl");
 const { authMiddlewares, isAdmin } = require("../middlewares/authMiddlewares");
 const router = express.Router();
 
-router.post("/register", createUser);
+router.post("/cadastrar", createUser);
 router.post("/forgot-password-token", forgotPasswordToken);
 router.post("/reset-password-token/:token", resetPassword);
 router.put(
@@ -47,9 +48,10 @@ router.post("/cart/cash-order", authMiddlewares, createOrder);
 router.get("/all-users", getallUser);
 router.get("/get-orders", authMiddlewares, getOrders);
 router.get("/getallorders", authMiddlewares, isAdmin, getAllOrders);
+router.post("/getorderbyuser/:id", authMiddlewares, isAdmin, getOrderByUserId);
 router.get("/refresh", handleRefreshToken);
 router.get("/logout", logout);
-router.get("/whishlist", authMiddlewares, getWishList);
+router.get("/wishlist", authMiddlewares, getWishList);
 router.get("/cart", authMiddlewares, getUserCart);
 router.get("/:id", authMiddlewares, isAdmin, getaUser);
 router.delete("/empty-cart", authMiddlewares, emptyCart);

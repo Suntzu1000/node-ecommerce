@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post("/", authMiddlewares, isAdmin, createProduct);
 router.get("/:id", getaProduct);
-router.put("/whishlist", authMiddlewares, isAdmin, addWishList);
+router.put("/wishlist", authMiddlewares, isAdmin, addWishList);
 router.put("/rating", authMiddlewares, isAdmin, rating);
 router.put("/:id", authMiddlewares, isAdmin, updateProduct);
 router.delete("/:id", authMiddlewares, isAdmin, deleteProduct);
