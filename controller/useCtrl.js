@@ -347,7 +347,7 @@ const getUserCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongodbId(_id);
   try {
-    const cart = await Cart.findOne({ userId: _id })
+    const cart = await Cart.find({ userId: _id })
       .populate("productId")
       .populate("color");
     res.json(cart);
@@ -356,7 +356,52 @@ const getUserCart = asyncHandler(async (req, res) => {
   }
 });
 
-const emptyCart = asyncHandler(async (req, res) => {
+const removeProductFromCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { cartItemId } = req.body;
+  validateMongodbId(_id);
+  try {
+    const deleteProductFromCart = await Cart.deleteOne({
+      userId: _id,
+      _id: cartItemId,
+    });
+    res.json(deleteProductFromCart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const updateProductQuantityFromCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { cartItemId, newQuantity } = req.body;
+  validateMongodbId(_id);
+  try {
+    const cartItem = await Cart.findOne({ userId: _id, _id: cartItemId });
+    cartItem.quantity = newQuantity;
+    cartItem.save();
+    res.json(cartItem);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const createOrder = asyncHandler(async (req, res) => {
+  const {shippingInfo, orderItems, totalPrice, totalPriceAfterDiscount, paymentInfo} = req.body;
+  const { _id } = req.user;
+  try{
+    const order = await Order.create({
+      shippingInfo, orderItems, totalPrice, totalPriceAfterDiscount, paymentInfo, user: _id
+    })
+    res.json({
+      order,
+      success: true
+    })
+  } catch(error) {
+    throw new Error(error);
+  }
+});
+
+/*const emptyCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongodbId(_id);
   try {
@@ -494,7 +539,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   } catch (error) {
     throw new Error(error);
   }
-});
+});*/
 
 module.exports = {
   createUser,
@@ -515,11 +560,14 @@ module.exports = {
   saveAddress,
   userCart,
   getUserCart,
-  emptyCart,
+ /* emptyCart,
   applyCoupon,
   createOrder,
   getOrders,
   updateOrderStatus,
   getAllOrders,
-  getOrderByUserId,
+  getOrderByUserId,*/
+  createOrder,
+  removeProductFromCart,
+  updateProductQuantityFromCart,
 };
