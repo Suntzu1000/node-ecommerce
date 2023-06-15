@@ -30,6 +30,7 @@ const {
   updateProductQuantityFromCart,
 } = require("../controller/useCtrl");
 const { authMiddlewares, isAdmin } = require("../middlewares/authMiddlewares");
+const { checkout, paymentVerification } = require("../controller/paymentsCtrl");
 const router = express.Router();
 
 router.post("/cadastrar", createUser);
@@ -46,6 +47,8 @@ router.put("/password", authMiddlewares, updatePassword);
 router.post("/login", loginUserCtrl);
 router.post("/admin-login", loginAdmin);
 router.post("/cart", authMiddlewares, userCart);
+router.post("/order/checkout", authMiddlewares, checkout);
+router.post("/order/paymentVerification", authMiddlewares, paymentVerification);
 //router.post("/cart/applycoupon", authMiddlewares, applyCoupon);
 router.post("/cart/create-order", authMiddlewares, createOrder);
 router.get("/all-users", getallUser);
@@ -58,9 +61,17 @@ router.get("/wishlist", authMiddlewares, getWishList);
 router.get("/cart", authMiddlewares, getUserCart);
 router.get("/:id", authMiddlewares, isAdmin, getaUser);
 //router.delete("/empty-cart", authMiddlewares, emptyCart);
-router.delete("/delete-product-cart/:cartItemId", authMiddlewares, removeProductFromCart);
+router.delete(
+  "/delete-product-cart/:cartItemId",
+  authMiddlewares,
+  removeProductFromCart
+);
 router.delete("/:id", deleteaUser);
-router.put("/update-product-cart/:cartItemId/:newQuantity", authMiddlewares, updateProductQuantityFromCart);
+router.put(
+  "/update-product-cart/:cartItemId/:newQuantity",
+  authMiddlewares,
+  updateProductQuantityFromCart
+);
 router.put("/edit-user", authMiddlewares, updatedUser);
 router.put("/save-address", authMiddlewares, saveAddress);
 router.put("/block-user/:id", authMiddlewares, isAdmin, blockUser);
