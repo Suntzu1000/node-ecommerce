@@ -1,29 +1,58 @@
-const RazorPay = require("razorpay");
-const instance = new RazorPay({
-  key_id: "",
-  key_secret: "",
+const mercadopago = require("mercadopago");
+
+
+mercadopago.configure({
+  access_token: process.env.ACCESS_TOKEN_MERCADOPAGO,
 });
 
 const checkout = async (req, res) => {
-  const option = {
-    amount: 50000,
-    currency: "INR",
+  const {amount, title} = req.body
+  const preference = {
+    items: [
+      {
+        title: title,
+        amount: amount,
+        quantity: 1,
+      },
+    ],
   };
-  const order = await instance.orders.create(option);
-  res.json({
-    success: true,
-    order,
-  });
+
+  try {
+    const response = await mercadopago.preferences.create(preference);
+    const { id: preferenceId } = response.body;
+    res.json({
+      success: true,
+      preferenceId,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error.message,
+    });
+  }
 };
+
 const paymentVerification = async (req, res) => {
-  const { razorpayOrderId, RazorpayPaymentId } = req.body;
-  return res.json({
-    razorpayOrderId,
-    RazorpayPaymentId,
-  });
+  const { preferenceId, paymentId } = req.body;
+
+  try {
+    const paymentInfo = await mercadopago.payment.get(paymentId);
+    const { order_id: mercadoPagoOrderId } = paymentInfo.response;
+
+    res.json({
+      mercadoPagoOrderId,
+      paymentId,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error.message,
+    });
+  }
 };
 
 module.exports = {
   checkout,
   paymentVerification,
 };
+
