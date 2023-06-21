@@ -10,6 +10,7 @@ const { generateRefreshToken } = require("../config/refreshtoken");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const uniquid = require("uniquid");
+const sendEmail = require('./emailCtrl')
 
 //POST
 const createUser = asyncHandler(async (req, res) => {
@@ -30,11 +31,11 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
     const findUser = await User.findOne({ email });
 
     if (findUser && (await findUser.isPasswordMatched(password))) {
-      const refreshToken = generateRefreshToken(findUser._id);
+      const refreshToken = generateRefreshToken(findUser?._id);
       const updateuser = await User.findByIdAndUpdate(
         findUser.id,
         {
-          refreshToken,
+          refreshToken: refreshToken,
         },
         { new: true }
       );
@@ -44,11 +45,11 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
       });
       res.json({
         _id: findUser._id,
-        firstname: findUser.firstname,
-        lastname: findUser.lastname,
-        email: findUser.email,
-        mobile: findUser.mobile,
-        token: generateToken(findUser._id),
+        firstname: findUser?.firstname,
+        lastname: findUser?.lastname,
+        email: findUser?.email,
+        mobile: findUser?.mobile,
+        token: generateToken(findUser?._id),
       });
     } else {
       throw new Error("Credenciais Inválidos");
@@ -284,7 +285,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
   try {
     const token = await user.createPasswordResetToken();
     await user.save();
-    const resetURL = `Olá! Por favor siga este link para Resetar sua senha! Será validada em até 10 minutos <a href='http://localhost:5000/api/user/reset-password/${token}' >Clique</a> `;
+    const resetURL = `Olá! Por favor siga este link para Resetar sua senha! Será validada em até 10 minutos <a href='http://localhost:3001/reset-password/${token}' >Clique</a> `;
     const data = {
       to: email,
       text: "Olá Usuário!",

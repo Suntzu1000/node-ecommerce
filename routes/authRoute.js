@@ -36,7 +36,7 @@ const router = express.Router();
 
 router.post("/cadastrar", createUser);
 router.post("/forgot-password-token", forgotPasswordToken);
-router.post("/reset-password-token/:token", resetPassword);
+router.put("/reset-password/:token", resetPassword);
 /*router.put(
   "/order/update-order/:id",
   authMiddlewares,
