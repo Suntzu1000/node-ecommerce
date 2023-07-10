@@ -44,7 +44,7 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
         maxAge: 72 * 60 * 60 * 1000,
       });
       res.json({
-        _id: findUser._id,
+        _id: findUser?._id,
         firstname: findUser?.firstname,
         lastname: findUser?.lastname,
         email: findUser?.email,
@@ -81,12 +81,12 @@ const loginAdmin = asyncHandler(async (req, res) => {
         maxAge: 72 * 60 * 60 * 1000,
       });
       res.json({
-        _id: findAdmin._id,
-        firstname: findAdmin.firstname,
-        lastname: findAdmin.lastname,
-        email: findAdmin.email,
-        mobile: findAdmin.mobile,
-        token: generateToken(findAdmin._id),
+        _id: findAdmin?._id,
+        firstname: findAdmin?.firstname,
+        lastname: findAdmin?.lastname,
+        email: findAdmin?.email,
+        mobile: findAdmin?.mobile,
+        token: generateToken(findAdmin?._id),
       });
     } else {
       throw new Error("Credenciais Inválidos");
@@ -359,7 +359,7 @@ const getUserCart = asyncHandler(async (req, res) => {
 
 const removeProductFromCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
-  const { cartItemId } = req.body;
+  const { cartItemId } = req.params;
   validateMongodbId(_id);
   try {
     const deleteProductFromCart = await Cart.deleteOne({
@@ -372,13 +372,24 @@ const removeProductFromCart = asyncHandler(async (req, res) => {
   }
 });
 
+const emptyCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongodbId(_id);
+  try {
+    const deleteCart = await Cart.deleteMany({ userId: _id });
+    res.json(deleteCart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 const updateProductQuantityFromCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
-  const { cartItemId, newQuantity } = req.body;
+  const { cartItemId, newQuantiy } = req.params;
   validateMongodbId(_id);
   try {
     const cartItem = await Cart.findOne({ userId: _id, _id: cartItemId });
-    cartItem.quantity = newQuantity;
+    cartItem.quantity = newQuantiy;
     cartItem.save();
     res.json(cartItem);
   } catch (error) {
@@ -445,7 +456,23 @@ const getAllOrders = asyncHandler(async (req, res) => {
 const getSingleOrder = asyncHandler(async (req, res) => {
   const { id } = req.user;
   try {
-    const orders = await Order.findOne({ id: id }).populate("product")
+    const orders = await Order.findOne({ id: id })
+      .populate("orderItems.product")
+      .populate("orderItems.color");
+    res.json({
+      orders,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const updateOrders = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  try {
+    const orders = await Order.findById(id);
+    orders.orderStatus = req.body.status;
+    await orders.save();
     res.json({
       orders,
     });
@@ -565,4 +592,6 @@ module.exports = {
   getYearlyTotalOrders,
   getAllOrders,
   getSingleOrder,
+  updateOrders,
+  emptyCart,
 };

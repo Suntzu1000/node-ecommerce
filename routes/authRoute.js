@@ -33,6 +33,8 @@ const {
   getYearlyTotalOrders,
   getAllOrders,
   getSingleOrder,
+  updateOrders,
+  emptyCart,
 } = require("../controller/useCtrl");
 const { authMiddlewares, isAdmin } = require("../middlewares/authMiddlewares");
 const { checkout, paymentVerification } = require("../controller/paymentsCtrl");
@@ -60,6 +62,7 @@ router.get("/all-users", getallUser);
 router.get("/getmyorders", authMiddlewares, getMyOrders);
 router.get("/getallorders", authMiddlewares, isAdmin, getAllOrders);
 router.get("/getaorder/:id", authMiddlewares, isAdmin, getSingleOrder);
+router.put("/updateOrder/:id", authMiddlewares, isAdmin, updateOrders);
 //router.post("/getorderbyuser/:id", authMiddlewares, isAdmin, getOrderByUserId);
 router.get("/refresh", handleRefreshToken);
 router.get("/logout", logout);
@@ -78,12 +81,14 @@ router.delete(
   authMiddlewares,
   removeProductFromCart
 );
-router.delete("/:id", deleteaUser);
 router.put(
   "/update-product-cart/:cartItemId/:newQuantity",
   authMiddlewares,
   updateProductQuantityFromCart
 );
+router.delete("/empty-cart", authMiddlewares, emptyCart);
+router.delete("/:id", deleteaUser);
+
 router.put("/edit-user", authMiddlewares, updatedUser);
 router.put("/save-address", authMiddlewares, saveAddress);
 router.put("/block-user/:id", authMiddlewares, isAdmin, blockUser);
