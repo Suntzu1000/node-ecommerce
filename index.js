@@ -22,7 +22,7 @@ const cors = require("cors");
 dbConnect();
 
 app.use(morgan("dev"));
-app.use(cors({origin: 'https://frontend-e-commerce-gg.vercel.app'}));
+app.use(cors({origin: 'https://frontend-e-commerce-n6ob7zjji-suntzu1000.vercel.app/'}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
