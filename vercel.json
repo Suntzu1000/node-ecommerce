@@ -2,11 +2,11 @@
   "version": 2,
   "name": "node_ecommerce",
   "builds": [
-    { "node_ecommerce": "index.js", "use": "@vercel/node" }
+    { "src": "index.js", "use": "@vercel/node" }
   ],
   "routes": [
     { 
-      "node_ecommerce": "/(.*)", 
+      "src": "/(.*)", 
       "dest": "./index.js", 
       "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       "headers": {
