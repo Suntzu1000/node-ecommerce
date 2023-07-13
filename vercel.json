@@ -2,12 +2,12 @@
   "version": 2,
   "name": "node_ecommerce",
   "builds": [
-    { "src": "index.js", "use": "@vercel/node" }
+    { "node_ecommerce": "index.js", "use": "@vercel/node" }
   ],
   "routes": [
     { 
-      "src": "/(.*)", 
-      "dest": "/index.js", 
+      "node_ecommerce": "/(.*)", 
+      "dest": "./index.js", 
       "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       "headers": {
         "Access-Control-Allow-Origin": "*"
